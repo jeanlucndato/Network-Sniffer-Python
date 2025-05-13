@@ -1,0 +1,91 @@
+# network_sniffer.py
+
+Ce script Python utilise la librairie Scapy pour capturer et enregistrer tout le trafic réseau transitant par une interface spécifiée. Il enregistre des informations de base sur chaque paquet, y compris les adresses MAC source et destination (Ethernet), les adresses IP source et destination (si présentes), le protocole (TCP, UDP, ICMP, etc.) et les ports (pour TCP et UDP).
+
+## Prérequis
+
+- **Python 3.x** installé sur votre système.
+- **pip** (gestionnaire de paquets Python) installé.
+- **Scapy** installé. Vous pouvez l'installer en exécutant la commande suivante dans votre terminal ou invite de commandes :
+  ```bash
+  pip install scapy
+  ```
+  Sur certains systèmes (notamment Linux), vous pourriez avoir besoin d'installer des dépendances système pour Scapy, comme `libpcap-dev`. Utilisez votre gestionnaire de paquets pour l'installer (par exemple, `sudo apt-get install libpcap-dev` sur Debian/Ubuntu).
+- **Environnement virtuel Python (recommandé)**. Il est conseillé d'utiliser un environnement virtuel pour isoler les dépendances de votre projet.
+
+## Installation (Optionnel - Utilisation d'un environnement virtuel)
+
+1.  **Créez un environnement virtuel :**
+
+    ```bash
+    python -m venv venv
+    ```
+
+2.  **Activez l'environnement virtuel :**
+
+    - **Linux/macOS :**
+      ```bash
+      source venv/bin/activate
+      ```
+    - **Windows (Invite de commandes) :**
+      ```bash
+      venv\Scripts\activate
+      ```
+    - **Windows (PowerShell) :**
+      ```powershell
+      .\venv\Scripts\Activate.ps1
+      ```
+
+3.  **Installez Scapy dans l'environnement virtuel :**
+    ```bash
+    pip install scapy
+    ```
+
+## Guide d'utilisation
+
+1.  **Enregistrez le script :** Assurez-vous d'avoir enregistré le code du script sous le nom `network_sniffer.py`.
+
+2.  **Ouvrez votre terminal ou invite de commandes :** Naviguez jusqu'au répertoire où vous avez enregistré le fichier `network_sniffer.py`. Si vous utilisez un environnement virtuel, assurez-vous qu'il est activé.
+
+3.  **Identifiez votre interface réseau :** Vous devez connaître le nom de l'interface réseau que vous souhaitez surveiller.
+
+    - **Linux :** Utilisez la commande `ip addr` ou `ifconfig`.
+    - **macOS :** Utilisez la commande `ifconfig`.
+    - **Windows :** Utilisez la commande `ipconfig /all` dans l'invite de commandes exécutée en tant qu'administrateur.
+
+4.  **Exécutez le script :** Exécutez le script Python en passant le nom de l'interface réseau comme argument. **Note importante :** L'exécution de ce script nécessite généralement des privilèges d'administrateur ou root pour accéder aux interfaces réseau brutes.
+
+    - **Linux/macOS :**
+
+      ```bash
+      sudo python network_sniffer.py <nom_de_l_interface>
+      ```
+
+      Remplacez `<nom_de_l_interface>` par le nom de votre interface (par exemple, `eth0`, `wlan0`, `en0`).
+
+    - **Windows :** Exécutez l'invite de commandes en tant qu'administrateur et utilisez :
+      ```bash
+      python network_sniffer.py "<nom_de_l_interface>"
+      ```
+      Remplacez `<nom_de_l_interface>` par le nom de votre interface (par exemple, `"Ethernet 0"`, `"Wi-Fi"`). Notez que les noms d'interface sur Windows peuvent contenir des espaces, d'où l'utilisation de guillemets.
+
+5.  **Surveillance du trafic :** Le script commencera à capturer tout le trafic réseau sur l'interface spécifiée et affichera un message indiquant le nom du fichier de journalisation.
+
+6.  **Fichier de journalisation :** Les informations de chaque paquet capturé seront enregistrées dans un fichier nommé `network_sniffer_<nom_de_l_interface>.log` dans le même répertoire où vous avez exécuté le script. Chaque ligne du fichier de journalisation contient :
+
+    - L'horodatage de la capture (`[timestamp.microseconds]`).
+    - Les adresses MAC source et destination (`ETH: src_mac -> dst_mac`).
+    - Si le paquet est IP, les adresses IP source et destination (`IP: src_ip -> dst_ip`).
+    - Le protocole de la couche transport (`Proto: TCP`, `Proto: UDP`, `Proto: ICMP`, etc.).
+    - Les ports source et destination pour les protocoles TCP et UDP (`Sport: src_port`, `Dport: dst_port`).
+    - Pour les paquets non-IP, le type de protocole Ethernet (`Protocol Type: type_number`).
+
+7.  **Arrêt du script :** Pour arrêter la surveillance du trafic, appuyez sur `Ctrl + C` dans la fenêtre de votre terminal ou invite de commandes.
+
+## Notes importantes
+
+- **Permissions :** L'exécution du script nécessite des privilèges élevés.
+- **Volume de données :** La capture de tout le trafic réseau peut générer une grande quantité de données. Soyez conscient de l'espace disque disponible.
+- **Analyse :** Ce script fournit des informations de base. Pour une analyse plus approfondie, vous devrez peut-être modifier le script ou utiliser d'autres outils.
+- **Impact sur le système :** Une surveillance réseau intensive peut avoir un léger impact sur les performances de votre système.
+- **Éthique et légalité :** Utilisez cet outil de manière responsable et uniquement sur les réseaux où vous avez l'autorisation de surveiller le trafic. La surveillance non autorisée est illégale et contraire à l'éthique.

@@ -1,0 +1,142 @@
+Titre : Guide d'Utilisation du Script Python de Sniffing Réseau (Tous Protocoles)
+
+Ce guide explique comment utiliser le script Python `network_sniffer.py` pour capturer et enregistrer le trafic réseau de tous les protocoles courants sur une interface spécifiée.
+
+**Prérequis :**
+
+1.  **Python installé :** Assurez-vous que Python 3 est installé sur votre ordinateur.
+2.  **Scapy installé :** La librairie Scapy est nécessaire. Si vous ne l'avez pas installée, ouvrez votre terminal ou invite de commandes et exécutez :
+    ```bash
+    pip install scapy
+    ```
+    ou
+    ```bash
+    pip3 install scapy
+    ```
+    Selon votre configuration Python. Sur certains systèmes (notamment Linux), vous pourriez avoir besoin d'installer des dépendances système pour Scapy, comme `libpcap-dev`. Utilisez votre gestionnaire de paquets pour l'installer (par exemple, `sudo apt-get install libpcap-dev` sur Debian/Ubuntu).
+3.  **Environnement virtuel (recommandé) :** Il est conseillé d'utiliser un environnement virtuel Python pour isoler les dépendances du projet. Si vous n'en avez pas créé, suivez ces étapes :
+    ```bash
+    # Créer un environnement virtuel (si ce n'est pas déjà fait)
+    python -m venv venv
+
+    # Activer l'environnement virtuel
+    # Sur Linux/macOS :
+    source venv/bin/activate
+    # Sur Windows (Invite de commandes) :
+    venv\Scripts\activate
+    # Sur Windows (PowerShell) :
+    .\venv\Scripts\Activate.ps1
+    ```
+    Une fois activé, vous verrez `(venv)` au début de votre invite de commandes. Installez Scapy dans cet environnement : `pip install scapy`.
+
+**Le Script Python (network_sniffer.py) :**
+
+```python
+import sys
+from scapy.all import sniff, IP, TCP, UDP, ICMP, Ether
+
+def handle_packet(packet, log):
+    timestamp = packet.time
+    protocol = "Unknown"
+    src_ip = "Unknown"
+    dst_ip = "Unknown"
+    src_port = "Unknown"
+    dst_port = "Unknown"
+
+    if Ether in packet:
+        eth_src = packet[Ether].src
+        eth_dst = packet[Ether].dst
+
+        if IP in packet:
+            src_ip = packet[IP].src
+            dst_ip = packet[IP].dst
+
+            if TCP in packet:
+                protocol = "TCP"
+                src_port = packet[TCP].sport
+                dst_port = packet[TCP].dport
+            elif UDP in packet:
+                protocol = "UDP"
+                src_port = packet[UDP].sport
+                dst_port = packet[UDP].dport
+            elif ICMP in packet:
+                protocol = "ICMP"
+
+            log.write(f"[{timestamp:.6f}] ETH: {eth_src} -> {eth_dst}, IP: {src_ip} -> {dst_ip}, Proto: {protocol}, Sport: {src_port}, Dport: {dst_port}\n")
+        else:
+            log.write(f"[{timestamp:.6f}] ETH: {eth_src} -> {eth_dst}, Protocol Type: {packet[Ether].type}\n")
+
+def main(interface):
+    logfile_name = f"network_sniffer_{interface}.log"
+    with open(logfile_name, 'w') as logfile:
+        print(f"Surveillance de tout le trafic sur '{interface}', enregistrement dans '{logfile_name}'...")
+        try:
+            sniff(iface=interface, prn=lambda pkt: handle_packet(pkt, logfile), store=0)
+        except KeyboardInterrupt:
+            print("\nSurveillance arrêtée par l'utilisateur.")
+        except Exception as e:
+            print(f"Erreur durant la surveillance : {e}")
+
+if __name__ == "__main__":
+    if len(sys.argv) != 2:
+        print("Usage: python network_sniffer.py <interface>")
+        sys.exit(1)
+    interface_name = sys.argv[1]
+    main(interface_name)
+
+
+
+Étapes d'utilisation :
+
+
+Ouvrez votre terminal ou invite de commandes : Naviguez jusqu'au répertoire où vous avez enregistré le fichier network_sniffer.py. Si vous utilisez un environnement virtuel, assurez-vous qu'il est activé.
+
+Identifiez votre interface réseau : Vous devez connaître le nom de l'interface réseau que vous souhaitez surveiller.
+
+Sur Linux : Utilisez la commande ip addr ou ifconfig. Recherchez l'interface connectée à votre réseau (par exemple, eth0, wlan0).
+Sur macOS : Utilisez la commande ifconfig. Recherchez l'interface active (par exemple, en0, wlan0).
+
+Sur Windows : Ouvrez l'invite de commandes en tant qu'administrateur et utilisez la commande ipconfig /all. Recherchez la description de votre carte réseau. Le nom à utiliser avec Scapy peut être le nom de la description ou un nom similaire (par exemple, "Ethernet 0", "Wi-Fi").
+Exécutez le script avec l'interface : Utilisez la commande Python pour exécuter le script, en remplaçant <interface> par le nom réel de votre interface réseau. Important : La capture de paquets réseau nécessite généralement des privilèges d'administrateur ou root.
+
+Sur Linux/macOS : Utilisez sudo avant la commande :
+
+Bash
+
+sudo python packet_sniffer.py <nom_de_l_interface>
+Exemple :
+
+Bash
+
+sudo python packet_sniffer.py eth0
+Sur Windows : Exécutez l'invite de commandes en tant qu'administrateur et utilisez :
+
+Bash
+
+python packet_sniffer.py <nom_de_l_interface>
+Exemple (le nom de l'interface peut varier) :
+
+Bash
+
+python packet_sniffer.py "Ethernet 0"
+Surveillance du trafic : Une fois le script lancé, il commencera à capturer tout le trafic réseau passant par l'interface spécifiée. Vous verrez un message indiquant que la surveillance a commencé et le nom du fichier de journalisation.
+
+Consultation du fichier de journalisation : Pour chaque paquet capturé, des informations seront écrites dans un fichier texte nommé network_sniffer_<nom_de_l_interface>.log dans le même répertoire où vous avez exécuté le script. Ce fichier contiendra :
+
+L'horodatage de la capture du paquet.
+Les adresses MAC source et de destination (couche Ethernet).
+Si le paquet est IP (IPv4 ou IPv6), les adresses IP source et de destination.
+Le protocole de la couche transport (TCP, UDP, ICMP) s'il s'agit d'un paquet IP.
+Les ports source et de destination pour les protocoles TCP et UDP.
+Pour les paquets non-IP, le type de protocole Ethernet.
+Vous pouvez ouvrir ce fichier avec n'importe quel éditeur de texte pour examiner le trafic capturé.
+
+Arrêt du script : Pour arrêter la surveillance du trafic, appuyez sur Ctrl + C dans la fenêtre de votre terminal ou invite de commandes. Un message indiquant que la surveillance a été arrêtée s'affichera.
+
+Points importants :
+
+Permissions : L'exécution du script nécessite des privilèges élevés pour accéder aux interfaces réseau brutes.
+Volume de données : La capture de tout le trafic réseau peut générer une grande quantité de données, surtout sur les réseaux actifs. Le fichier de journalisation peut rapidement devenir volumineux.
+Analyse : Ce script fournit une vue brute du trafic. Pour une analyse plus approfondie, vous pourriez avoir besoin d'outils spécialisés ou d'étendre ce script pour filtrer ou interpréter des protocoles spécifiques.
+Impact sur le système : La surveillance intensive du réseau peut avoir un léger impact sur les performances de votre système.
+Ce guide devrait vous permettre d'utiliser le script network_sniffer.py pour observer l'ensemble du trafic réseau sur l'interface de votre choix. N'oubliez pas les considérations éthiques et légales concernant la surveillance du réseau.
