@@ -2,7 +2,7 @@
 
 interneship projects for CodeAlpha
 
-![Resultat](img/NetS)
+![Resultat](img/NetS.png)
 
 # Network Packet Sniffer - CodeAlpha Internship Task
 
